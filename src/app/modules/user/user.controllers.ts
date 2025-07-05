@@ -97,6 +97,22 @@ const getMeUserInfo = catchAsync(
     });
   }
 );
+
+// Logout User
+const logOutUser = catchAsync(async (req, res) => {
+  res.clearCookie("gup-shup-tkn", {
+    httpOnly: true,
+    secure: config.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "User Logout success",
+    data: "",
+  });
+});
 export const UserControllers = {
   createUser,
   allUsersGet,
@@ -104,4 +120,5 @@ export const UserControllers = {
   otpResend,
   loginUser,
   getMeUserInfo,
+  logOutUser,
 };

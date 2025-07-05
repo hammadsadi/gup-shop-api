@@ -6,6 +6,8 @@ const router = Router();
 
 // Create User
 router.post("/register", UserControllers.createUser);
+// Logout User
+router.post("/logOut", UserControllers.logOutUser);
 // Verify User Account By OTP
 router.post("/verify-account", UserControllers.verifyUserAccountByOtp);
 // Resend OTP
