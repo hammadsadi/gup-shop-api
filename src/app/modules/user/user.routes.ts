@@ -15,8 +15,11 @@ router.post("/resend-otp", UserControllers.otpResend);
 // Login User
 router.post("/login", UserControllers.loginUser);
 // Get All Users
-router.get("/", UserControllers.allUsersGet);
+router.get("/", auth(), UserControllers.allUsersGet);
 // Get Me
 router.get("/me", auth(), UserControllers.getMeUserInfo);
+
+// Update User Profile
+router.patch("/:userId", auth(), UserControllers.updateUsersProfileInfo);
 
 export const UserRoutes = router;

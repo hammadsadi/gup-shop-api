@@ -9,6 +9,7 @@ import { jwtHelpers } from "../../utils/jwtHelpers";
 import { Secret } from "jsonwebtoken";
 import { AppError } from "../../errors/AppError";
 import bcrypt from "bcryptjs";
+import { generateUniqueUsername } from "../../utils/generateUniqueUsername";
 // User Save to DB
 const userSaveToDB = async (payload: User) => {
   // Check User Already Exist
@@ -20,12 +21,18 @@ const userSaveToDB = async (payload: User) => {
   if (isUserExist) {
     throw new Error("User Already Exist");
   }
+  payload.username = await generateUniqueUsername(payload.name);
 
   // Hash Password
   payload.password = await bcrypt.hash(payload.password, 10);
+  // Generate Image
+  const imageUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${payload?.name}`;
 
   const result = await prisma.user.create({
-    data: payload,
+    data: {
+      ...payload,
+      photo: imageUrl,
+    },
   });
   const jwtPayload = {
     email: result.email,
@@ -122,6 +129,9 @@ const verifyUserAccountByOtp = async (id: string, otp: number) => {
     id: result.id,
     isAccountActive: result.isAccountActive,
     accessToken,
+    photo: result?.photo,
+    phone: result?.phone,
+    username: result?.username,
   };
 };
 
@@ -173,8 +183,24 @@ const resendOtp = async (id: string) => {
 };
 
 // Get All Users
-const getAllUsers = async () => {
-  const result = await prisma.user.findMany();
+const getAllUsers = async (authId: string) => {
+  const result = await prisma.user.findMany({
+    where: {
+      isAccountActive: true,
+      id: {
+        not: authId,
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      photo: true,
+      isAccountActive: true,
+      phone: true,
+      username: true,
+    },
+  });
   return result;
 };
 
@@ -215,6 +241,9 @@ const login = async (payload: User) => {
     id: result.id,
     isAccountActive: result.isAccountActive,
     accessToken,
+    photo: result?.photo,
+    phone: result?.phone,
+    username: result?.username,
   };
 };
 
@@ -230,6 +259,50 @@ const getMe = async (id: string) => {
   }
   return result;
 };
+
+// Update User Data
+const updateUserProfile = async (id: string, payload: User, authId: string) => {
+  const result = await prisma.user.findUnique({
+    where: {
+      id,
+    },
+  });
+  if (!result) {
+    throw new Error("User Not Found");
+  }
+  if (result.id !== authId) {
+    throw new Error("You are not authorized!");
+  }
+  // Username Check
+  if (payload?.name) {
+    payload.username = await generateUniqueUsername(payload.name);
+  }
+
+  // const isPasswordMatch = await bcrypt.compare(
+  //   payload.password,
+  //   result.password
+  // );
+  // if (!isPasswordMatch) {
+  //   throw new Error("Invalid Credentials!");
+  // }
+  // const hashedPassword = await bcrypt.hash(payload.password, 10);
+  const updatedUser = await prisma.user.update({
+    where: {
+      id,
+    },
+    data: payload,
+  });
+  return {
+    name: updatedUser.name,
+    email: updatedUser.email,
+    id: updatedUser.id,
+    isAccountActive: updatedUser.isAccountActive,
+    photo: updatedUser?.photo,
+    phone: updatedUser?.phone,
+    username: updatedUser?.username,
+  };
+};
+
 export const UserServices = {
   userSaveToDB,
   getAllUsers,
@@ -237,4 +310,5 @@ export const UserServices = {
   resendOtp,
   login,
   getMe,
+  updateUserProfile,
 };

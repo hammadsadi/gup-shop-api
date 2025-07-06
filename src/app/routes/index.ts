@@ -1,5 +1,6 @@
 import express from "express";
 import { UserRoutes } from "../modules/user/user.routes";
+import { ChatRoutes } from "../modules/chat/chat.routes";
 
 const router = express.Router();
 
@@ -7,6 +8,10 @@ const moduleRoutes = [
   {
     path: "/user",
     route: UserRoutes,
+  },
+  {
+    path: "/chat",
+    route: ChatRoutes,
   },
 ];
 

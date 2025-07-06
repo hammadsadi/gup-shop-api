@@ -29,10 +29,51 @@ model User{
   id String @id @default(uuid())
   email String @unique
   name String
+  username String? @unique
+  bio String?
   phone String
   password String
   photo String?
   isAccountActive Boolean @default(false)
   ActiveToken String?
   otpCode Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sentChats      Chats[]  @relation("SentChats")
+  receivedChats  Chats[]  @relation("ReceivedChats")
+
 }
+
+
+model Chats{
+  id String @id @default(uuid())
+  senderId String
+  receiverId String
+  messageId String @unique
+  theme String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean @default(false)
+  status ChatStatus @default(sent)
+  sender         User     @relation("SentChats", fields: [senderId], references: [id])
+  receiver       User     @relation("ReceivedChats", fields: [receiverId], references: [id])
+  message    Messages   @relation("MessageOnChat", fields: [messageId], references: [id])
+}
+
+enum ChatStatus {
+  sent
+  seen
+  delivered
+
+}
+
+model Messages{
+  id String @id @default(uuid())
+  text String?
+  photo String?
+  emoji String? 
+  link String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chat      Chats?   @relation("MessageOnChat")
+  }
