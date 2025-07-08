@@ -16,6 +16,7 @@ const chatSaveToDB = async (payload: any, authId: string) => {
     const message = await tx.messages.create({
       data: {
         text: payload?.text,
+        photo: payload?.photo || null,
       },
     });
     const chat = await tx.chats.create({
