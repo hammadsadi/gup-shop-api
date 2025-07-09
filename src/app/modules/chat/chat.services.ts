@@ -25,6 +25,25 @@ const chatSaveToDB = async (payload: any, authId: string) => {
         receiverId: payload.receiverId,
         messageId: message.id,
       },
+      include: {
+        message: true,
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
+        receiver: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
+      },
     });
     return chat;
   });

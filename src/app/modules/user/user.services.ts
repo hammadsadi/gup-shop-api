@@ -199,6 +199,50 @@ const getAllUsers = async (authId: string) => {
       isAccountActive: true,
       phone: true,
       username: true,
+      sentChats: {
+        where: {
+          receiverId: authId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          id: true,
+          message: true,
+          createdAt: true,
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              photo: true,
+              username: true,
+            },
+          },
+        },
+        take: 1,
+      },
+      receivedChats: {
+        where: {
+          senderId: authId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          id: true,
+          message: true,
+          createdAt: true,
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              photo: true,
+              username: true,
+            },
+          },
+        },
+        take: 1,
+      },
     },
   });
   return result;

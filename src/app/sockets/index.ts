@@ -11,7 +11,6 @@ export const socketHandler = (io: Server) => {
 
     // Handle message events
     messageHandler(io, socket);
-    // userHandler(io, socket);
     // Get User
     socket.on("newUser", (data) => {
       // Add the new user to the active users array
@@ -22,12 +21,24 @@ export const socketHandler = (io: Server) => {
       // Emit the updated active users to all connected clients
       io.emit("getAllActiveUsers", activeUsers);
     });
+    // Get Real Time Message
+    socket.on("realTimeMessage", (data: any) => {
+      // CHeck Active User
+      const checkActiveUser = activeUsers.find(
+        (u: any) => u.user?.id === data?.receiverId
+      );
+      if (checkActiveUser) {
+        console.log(data);
+        io.to(checkActiveUser.socketId).emit("receiveMessage", data);
+      }
+    });
     socket.on("disconnect", () => {
       console.log("Client disconnected", socket.id);
       // Remove the disconnected user from the active users array
       activeUsers = activeUsers.filter(
         (user: any) => user.socketId !== socket.id
       );
+
       // Emit the updated active users to all connected clients
       io.emit("getAllActiveUsers", activeUsers);
     });
